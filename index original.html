@@ -377,12 +377,12 @@
         </svg>
 
         <div class="timeTempDiv">
-          <h3>17h : 17°C</h3>
+          <h3><span id="temp">17</span>°C</h3>
         </div>
 
         <div class="timeDateDiv">
-          <h3>19th April</h3>
-          <h3>19:03</h3>
+          <h3><span id="date">19</span>th <span id="month">April</span></h3>
+          <h3><span id="hour">19</span>:<span id="minute">03</span></h3>
         </div>
       </div>
       <div class="moonPhase">
@@ -437,13 +437,66 @@
       <h3 class="subTitle">Bon SVG~!! Bourse Session</h3>
     </div>
 
-    <!-- https://openweathermap.org/api/one-call-api 
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      var geocoder;
 
-    এই API এড করতে হবে। দেখো timeTempDiv এ টাইম আর তাপমাত্রা আছে, এই ২ টা দেখাবা এখানে।
-    আর timeDateDiv এ সময় আর তারিখ দেখাবা API থেকে এনে। -->
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          successFunction,
+          errorFunction
+        );
+      }
+      function successFunction(position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+        getWeather(lat, lng);
+      }
 
-    <!-- আর একটা স্ক্রিপ্ট করতে হবে যেখানে প্রত্যেক মিনিটের জন্য hour-hand min-hand এই ২ টা rotate করবা। সূত্র টা হচ্ছে  -->
+      function errorFunction() {
+        alert("Geocoder failed");
+      }
+      function getWeather(lat, lng) {
+        const options = {
+          method: "GET",
+          url: `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&exclude=minutely,hourly,daily&appid=22cd88f0d1181643559ddbff2d4842f1&units=metric`,
+        };
 
-    <!-- প্রত্যেক মিনিটের জন্য 180 + 0.25deg min-hand & প্রত্যেক ঘন্টার জন্য 180 + 15 deg hour-hand ঘুরাবা  -->
+        axios
+          .request(options)
+          .then(function (response) {
+            let res = response.data;
+            let temp = res.current.temp;
+            document.getElementById("temp").innerText = temp;
+            let time = new Date(res.current.dt * 1000);
+            let hour = time.getHours();
+            document.getElementById("hour").innerText = hour;
+            let minute = time.getMinutes();
+            document.getElementById("minute").innerText = minute;
+
+            const months = [
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ];
+            let month = months[time.getMonth()];
+            document.getElementById("month").innerText = month;
+            let date = time.getDate();
+            document.getElementById("date").innerText = date;
+          })
+          .catch(function (error) {
+            console.error(error);
+          });
+      }
+    </script>
   </body>
 </html>
